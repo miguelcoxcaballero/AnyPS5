@@ -1,4 +1,3 @@
-#include "prx/libSceFreeType/include/Api.hpp"
 #include "prx/libSceFreeTypeOt/include/Trigonometry.hpp"
 #include <cstdint>
 #include <cstdio>
@@ -183,11 +182,11 @@ template <typename TCall> bool Throws(TCall call) {
 
 void CheckAngles() {
     for (const AngleCase& test : Angles) {
-        Require(FT_Sin_nid_postfix(test.angle) == test.sine, "FT_Sin matches FreeType 2.4.11", test.angle);
-        Require(FT_Cos_nid_postfix(test.angle) == test.cosine, "FT_Cos matches FreeType 2.4.11", test.angle);
-        Require(FT_Tan_nid_postfix(test.angle) == test.tangent, "FT_Tan matches FreeType 2.4.11", test.angle);
+        Require(sceFreeTypeOtSin_nid_no_patch(test.angle) == test.sine, "FT_Sin matches FreeType 2.4.11", test.angle);
+        Require(sceFreeTypeOtCos_nid_no_patch(test.angle) == test.cosine, "FT_Cos matches FreeType 2.4.11", test.angle);
+        Require(sceFreeTypeOtTan_nid_no_patch(test.angle) == test.tangent, "FT_Tan matches FreeType 2.4.11", test.angle);
         FreeType::GuestVector unit{7, 7};
-        FT_Vector_Unit_nid_postfix(&unit, test.angle);
+        sceFreeTypeOtVectorUnit_nid_no_patch(&unit, test.angle);
         Require(unit.x == test.unitX && unit.y == test.unitY, "FT_Vector_Unit matches FreeType 2.4.11", test.angle);
     }
 }
@@ -195,22 +194,22 @@ void CheckAngles() {
 void CheckVectors() {
     for (const VectorCase& test : Vectors) {
         FreeType::GuestVector vector{test.x, test.y};
-        Require(FT_Vector_Length_nid_postfix(&vector) == test.length, "FT_Vector_Length matches FreeType 2.4.11", test.x);
+        Require(sceFreeTypeOtVectorLength_nid_no_patch(&vector) == test.length, "FT_Vector_Length matches FreeType 2.4.11", test.x);
         Require(vector.x == test.x && vector.y == test.y, "FT_Vector_Length leaves the vector unchanged", test.x);
         std::int64_t length = -1;
         std::int64_t angle = -1;
-        FT_Vector_Polarize_nid_postfix(&vector, &length, &angle);
+        sceFreeTypeOtVectorPolarize_nid_no_patch(&vector, &length, &angle);
         Require(length == test.polarLength && angle == test.polarAngle, "FT_Vector_Polarize matches FreeType 2.4.11", test.x);
-        Require(FT_Atan2_nid_postfix(test.x, test.y) == test.atan2, "FT_Atan2 matches FreeType 2.4.11", test.x);
+        Require(sceFreeTypeOtAtan2_nid_no_patch(test.x, test.y) == test.atan2, "FT_Atan2 matches FreeType 2.4.11", test.x);
     }
     for (const RotationCase& test : Rotations) {
         FreeType::GuestVector vector{test.x, test.y};
-        FT_Vector_Rotate_nid_postfix(&vector, test.angle);
+        sceFreeTypeOtVectorRotate_nid_no_patch(&vector, test.angle);
         Require(vector.x == test.rotatedX && vector.y == test.rotatedY, "FT_Vector_Rotate matches FreeType 2.4.11", test.x);
     }
     for (const PolarCase& test : Polars) {
         FreeType::GuestVector vector{7, 7};
-        FT_Vector_From_Polar_nid_postfix(&vector, test.length, test.angle);
+        sceFreeTypeOtVectorFromPolar_nid_no_patch(&vector, test.length, test.angle);
         Require(vector.x == test.x && vector.y == test.y, "FT_Vector_From_Polar matches FreeType 2.4.11", test.length);
     }
 }
@@ -219,26 +218,26 @@ void CheckEdges() {
     FreeType::GuestVector zero{0, 0};
     std::int64_t length = 11;
     std::int64_t angle = 13;
-    FT_Vector_Polarize_nid_postfix(&zero, &length, &angle);
+    sceFreeTypeOtVectorPolarize_nid_no_patch(&zero, &length, &angle);
     Require(length == 11 && angle == 13, "FT_Vector_Polarize leaves the outputs of a zero vector unwritten", 0);
-    FT_Vector_Polarize_nid_postfix(&zero, nullptr, nullptr);
-    Require(FT_Atan2_nid_postfix(0, 0) == 0, "FT_Atan2 of a zero vector is 0", 0);
+    sceFreeTypeOtVectorPolarize_nid_no_patch(&zero, nullptr, nullptr);
+    Require(sceFreeTypeOtAtan2_nid_no_patch(0, 0) == 0, "FT_Atan2 of a zero vector is 0", 0);
     FreeType::GuestVector vector{3, 4};
-    FT_Vector_Rotate_nid_postfix(&vector, 0);
+    sceFreeTypeOtVectorRotate_nid_no_patch(&vector, 0);
     Require(vector.x == 3 && vector.y == 4, "FT_Vector_Rotate by 0 keeps the vector", 0);
-    FT_Vector_Rotate_nid_postfix(&zero, 1966080);
+    sceFreeTypeOtVectorRotate_nid_no_patch(&zero, 1966080);
     Require(zero.x == 0 && zero.y == 0, "FT_Vector_Rotate keeps a zero vector", 0);
-    Require(Throws([] { FT_Vector_Unit_nid_postfix(nullptr, 0); }), "FT_Vector_Unit throws for a null vector", 0);
-    Require(Throws([] { FT_Vector_Rotate_nid_postfix(nullptr, 1); }), "FT_Vector_Rotate throws for a null vector", 0);
-    Require(Throws([] { FT_Vector_Length_nid_postfix(nullptr); }), "FT_Vector_Length throws for a null vector", 0);
-    Require(Throws([] { FT_Vector_From_Polar_nid_postfix(nullptr, 1, 0); }), "FT_Vector_From_Polar throws for a null vector", 0);
-    Require(Throws([&] { FT_Vector_Polarize_nid_postfix(&vector, nullptr, &angle); }) &&
-                Throws([&] { FT_Vector_Polarize_nid_postfix(&vector, &length, nullptr); }) && length == 11 && angle == 13,
+    Require(Throws([] { sceFreeTypeOtVectorUnit_nid_no_patch(nullptr, 0); }), "FT_Vector_Unit throws for a null vector", 0);
+    Require(Throws([] { sceFreeTypeOtVectorRotate_nid_no_patch(nullptr, 1); }), "FT_Vector_Rotate throws for a null vector", 0);
+    Require(Throws([] { sceFreeTypeOtVectorLength_nid_no_patch(nullptr); }), "FT_Vector_Length throws for a null vector", 0);
+    Require(Throws([] { sceFreeTypeOtVectorFromPolar_nid_no_patch(nullptr, 1, 0); }), "FT_Vector_From_Polar throws for a null vector", 0);
+    Require(Throws([&] { sceFreeTypeOtVectorPolarize_nid_no_patch(&vector, nullptr, &angle); }) &&
+                Throws([&] { sceFreeTypeOtVectorPolarize_nid_no_patch(&vector, &length, nullptr); }) && length == 11 && angle == 13,
         "FT_Vector_Polarize throws for a null output of a nonzero vector without writing", 0);
     for (const DiffCase& test : Diffs) {
-        Require(FT_Angle_Diff_nid_postfix(test.first, test.second) == test.difference, "FT_Angle_Diff matches FreeType 2.4.11", test.first);
+        Require(sceFreeTypeOtAngleDiff_nid_no_patch(test.first, test.second) == test.difference, "FT_Angle_Diff matches FreeType 2.4.11", test.first);
     }
-    Require(Throws([] { FT_Angle_Diff_nid_postfix(INT64_MIN, 1); }) && Throws([] { FT_Angle_Diff_nid_postfix(1, INT64_MIN); }),
+    Require(Throws([] { sceFreeTypeOtAngleDiff_nid_no_patch(INT64_MIN, 1); }) && Throws([] { sceFreeTypeOtAngleDiff_nid_no_patch(1, INT64_MIN); }),
         "FT_Angle_Diff throws where the signed subtraction overflows", 0);
 }
 

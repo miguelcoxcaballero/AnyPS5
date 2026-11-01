@@ -1,6 +1,6 @@
-#include "prx/libSceFreeType/include/Api.hpp"
 #include "prx/libSceFreeTypeOt/include/Trigonometry.hpp"
 #include "prx/libc/include/General.hpp"
+#include "SceTypes.hpp"
 
 #include <cstdint>
 #include <limits>
@@ -231,20 +231,23 @@ std::int64_t Length(GuestVector vector) {
 
 extern "C" {
 
-std::int64_t APS5_VABI FT_Cos_nid_postfix(std::int64_t angle) {
+std::int64_t APS5_VABI sceFreeTypeOtCos_nid_no_patch(std::int64_t angle) {
     return RotatedUnit(angle).x / (1 << 12);
 }
+APS5_EXPORT("yD4-QaNSink", sceFreeTypeOtCos_nid_no_patch);
 
-std::int64_t APS5_VABI FT_Sin_nid_postfix(std::int64_t angle) {
+std::int64_t APS5_VABI sceFreeTypeOtSin_nid_no_patch(std::int64_t angle) {
     return RotatedUnit(Subtract(AnglePi2, angle)).x / (1 << 12);
 }
+APS5_EXPORT("L1uHkWTazkI", sceFreeTypeOtSin_nid_no_patch);
 
-std::int64_t APS5_VABI FT_Tan_nid_postfix(std::int64_t angle) {
+std::int64_t APS5_VABI sceFreeTypeOtTan_nid_no_patch(std::int64_t angle) {
     const GuestVector vector = RotatedUnit(angle);
     return DivFix(vector.y, vector.x);
 }
+APS5_EXPORT("dojyaLKzKN0", sceFreeTypeOtTan_nid_no_patch);
 
-std::int64_t APS5_VABI FT_Atan2_nid_postfix(std::int64_t dx, std::int64_t dy) {
+std::int64_t APS5_VABI sceFreeTypeOtAtan2_nid_no_patch(std::int64_t dx, std::int64_t dy) {
     if (dx == 0 && dy == 0) {
         return 0;
     }
@@ -253,8 +256,9 @@ std::int64_t APS5_VABI FT_Atan2_nid_postfix(std::int64_t dx, std::int64_t dy) {
     PseudoPolarize(vector);
     return vector.y;
 }
+APS5_EXPORT("p90G4PB-rPc", sceFreeTypeOtAtan2_nid_no_patch);
 
-void APS5_VABI FT_Vector_Unit_nid_postfix(GuestVector* vector, std::int64_t angle) {
+void APS5_VABI sceFreeTypeOtVectorUnit_nid_no_patch(GuestVector* vector, std::int64_t angle) {
     if (!vector) {
         NotImplemented_nid_no_patch(__func__);
     }
@@ -262,22 +266,25 @@ void APS5_VABI FT_Vector_Unit_nid_postfix(GuestVector* vector, std::int64_t angl
     vector->x = unit.x >> 12;
     vector->y = unit.y >> 12;
 }
+APS5_EXPORT("3WpTQrvGUcU", sceFreeTypeOtVectorUnit_nid_no_patch);
 
-void APS5_VABI FT_Vector_Rotate_nid_postfix(GuestVector* vector, std::int64_t angle) {
+void APS5_VABI sceFreeTypeOtVectorRotate_nid_no_patch(GuestVector* vector, std::int64_t angle) {
     if (!vector) {
         NotImplemented_nid_no_patch(__func__);
     }
     Rotate(*vector, angle);
 }
+APS5_EXPORT("6wJwUIVwAxg", sceFreeTypeOtVectorRotate_nid_no_patch);
 
-std::int64_t APS5_VABI FT_Vector_Length_nid_postfix(GuestVector* vector) {
+std::int64_t APS5_VABI sceFreeTypeOtVectorLength_nid_no_patch(GuestVector* vector) {
     if (!vector) {
         NotImplemented_nid_no_patch(__func__);
     }
     return Length(*vector);
 }
+APS5_EXPORT("1jmC2QcpRl0", sceFreeTypeOtVectorLength_nid_no_patch);
 
-void APS5_VABI FT_Vector_Polarize_nid_postfix(GuestVector* vector, std::int64_t* length, std::int64_t* angle) {
+void APS5_VABI sceFreeTypeOtVectorPolarize_nid_no_patch(GuestVector* vector, std::int64_t* length, std::int64_t* angle) {
     if (!vector) {
         NotImplemented_nid_no_patch(__func__);
     }
@@ -294,8 +301,9 @@ void APS5_VABI FT_Vector_Polarize_nid_postfix(GuestVector* vector, std::int64_t*
     *length = shift >= 0 ? scaled >> shift : ShiftLeft(scaled, -shift);
     *angle = v.y;
 }
+APS5_EXPORT("HMcNe70D9TI", sceFreeTypeOtVectorPolarize_nid_no_patch);
 
-void APS5_VABI FT_Vector_From_Polar_nid_postfix(GuestVector* vector, std::int64_t length, std::int64_t angle) {
+void APS5_VABI sceFreeTypeOtVectorFromPolar_nid_no_patch(GuestVector* vector, std::int64_t length, std::int64_t angle) {
     if (!vector) {
         NotImplemented_nid_no_patch(__func__);
     }
@@ -303,8 +311,9 @@ void APS5_VABI FT_Vector_From_Polar_nid_postfix(GuestVector* vector, std::int64_
     Rotate(v, angle);
     *vector = v;
 }
+APS5_EXPORT("2rmvbvOCyjY", sceFreeTypeOtVectorFromPolar_nid_no_patch);
 
-std::int64_t APS5_VABI FT_Angle_Diff_nid_postfix(std::int64_t first, std::int64_t second) {
+std::int64_t APS5_VABI sceFreeTypeOtAngleDiff_nid_no_patch(std::int64_t first, std::int64_t second) {
     if ((first > 0 && second < std::numeric_limits<std::int64_t>::min() + first) ||
         (first < 0 && second > std::numeric_limits<std::int64_t>::max() + first)) {
         NotImplemented_nid_no_patch(__func__);
@@ -318,5 +327,6 @@ std::int64_t APS5_VABI FT_Angle_Diff_nid_postfix(std::int64_t first, std::int64_
     }
     return delta;
 }
+APS5_EXPORT("D1l8+Bu+-Y8", sceFreeTypeOtAngleDiff_nid_no_patch);
 
 }
